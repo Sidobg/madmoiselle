@@ -25,10 +25,9 @@ module.exports = async function handler(req, res) {
   const calendar = google.calendar({ version: 'v3', auth });
 
   // data: "YYYY-MM-DD", ora: "HH:MM"
+  // Convertiamo l'ora di Roma in UTC tramite Intl (gestisce CET +01 e CEST +02)
   const [year, month, day] = data.split('-').map(Number);
-  const [hour, min] = ora.split(':').map(Number);
-
-  const start = new Date(year, month - 1, day, hour, min);
+  const start = romeToUTC(data, `${ora}:00`);
   const end   = new Date(start.getTime() + 60 * 60 * 1000); // durata 1 ora
 
   const description = [
@@ -104,6 +103,30 @@ Note:      ${note || '—'}`,
 };
 
 // ─── Helpers ────────────────────────────────────────────────────
+
+/**
+ * Converte una data+ora espressa in Europe/Rome nel corrispondente Date UTC.
+ * Determina CET (+01:00) o CEST (+02:00) dinamicamente tramite Intl.
+ *
+ * @param {string} dateStr  "YYYY-MM-DD"
+ * @param {string} timeStr  "HH:MM:SS"
+ * @returns {Date}
+ */
+function romeToUTC(dateStr, timeStr) {
+  const naive     = new Date(`${dateStr}T${timeStr}Z`);
+  const offsetMin = getRomeOffsetMinutes(naive);
+  return new Date(naive.getTime() - offsetMin * 60_000);
+}
+
+/**
+ * Offset in minuti di Europe/Rome vs UTC per l'istante dato.
+ * Restituisce +60 (CET) o +120 (CEST).
+ */
+function getRomeOffsetMinutes(date) {
+  const utcStr  = date.toLocaleString('en-US', { timeZone: 'UTC' });
+  const romeStr = date.toLocaleString('en-US', { timeZone: 'Europe/Rome' });
+  return (new Date(romeStr) - new Date(utcStr)) / 60_000;
+}
 
 function pad(n) {
   return String(n).padStart(2, '0');
