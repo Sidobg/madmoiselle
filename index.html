@@ -730,12 +730,13 @@
     document.getElementById('formPanel').classList.remove('open');
     document.getElementById('confirmBanner').style.display = 'none';
   
+
   // ─── Selezione servizio ───
-  document.querySelectorAll('.servizio-card').forEach(card => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('.servizio-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-    });
+  document.getElementById('serviziGrid').addEventListener('click', function(e) {
+    const card = e.target.closest('.servizio-card');
+    if (!card) return;
+    document.querySelectorAll('.servizio-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
   });
 
   renderCalendar();
