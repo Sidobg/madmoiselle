@@ -22,10 +22,11 @@ module.exports = async function handler(req, res) {
   auth.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
 
   // ─── Leggi eventi del giorno ───────────────────────────────────
+  // timeMin/timeMax convertiti da ora di Roma a UTC (gestisce CET +01 e CEST +02)
   const calendar = google.calendar({ version: 'v3', auth });
 
-  const timeMin = new Date(`${data}T00:00:00+01:00`).toISOString();
-  const timeMax = new Date(`${data}T23:59:59+01:00`).toISOString();
+  const timeMin = romeToUTC(data, '00:00:00').toISOString();
+  const timeMax = romeToUTC(data, '23:59:59').toISOString();
 
   const { data: calData } = await calendar.events.list({
     calendarId: process.env.CALENDAR_ID,
@@ -39,36 +40,66 @@ module.exports = async function handler(req, res) {
   const events = calData.items || [];
 
   // ─── Calcola slot occupati ─────────────────────────────────────
-  // Un slot HH:MM (durata 30 min) è occupato se qualsiasi evento
-  // si sovrappone all'intervallo [slotStart, slotStart + 30 min).
-  const SLOT_MIN = 30 * 60 * 1000; // 30 minuti in ms
-
-  // Costruiamo tutti gli slot possibili (07:00–22:00, ogni 30 min)
-  // e verifichiamo sovrapposizione con gli eventi del giorno.
+  // Un slot HH:MM (durata 30 min) è occupato se un evento si sovrappone
+  // all'intervallo [slotStart, slotStart + 30 min).
+  // slotStart è costruito in ora di Roma → convertito a UTC per confronto corretto.
+  const SLOT_MS = 30 * 60 * 1000;
   const occupied = [];
 
   for (let h = 7; h < 22; h++) {
     for (const m of [0, 30]) {
-      const slotStart = new Date(`${data}T${pad(h)}:${pad(m)}:00`);
-      const slotEnd   = new Date(slotStart.getTime() + SLOT_MIN);
+      const slotStart = romeToUTC(data, `${pad(h)}:${pad(m)}:00`);
+      const slotEnd   = new Date(slotStart.getTime() + SLOT_MS);
 
       const isOccupied = events.some(ev => {
-        // Gestisci eventi tutto-il-giorno (nessun orario)
+        // Ignora eventi tutto-il-giorno (senza dateTime)
         if (!ev.start?.dateTime) return false;
+        // Google Calendar restituisce dateTime con offset incluso (es. 09:00:00+02:00)
+        // new Date() lo converte correttamente in UTC
         const evStart = new Date(ev.start.dateTime);
         const evEnd   = new Date(ev.end.dateTime);
-        // Sovrapposizione: evStart < slotEnd AND evEnd > slotStart
         return evStart < slotEnd && evEnd > slotStart;
       });
 
-      if (isOccupied) {
-        occupied.push(`${pad(h)}:${pad(m)}`);
-      }
+      if (isOccupied) occupied.push(`${pad(h)}:${pad(m)}`);
     }
   }
 
   return res.status(200).json({ occupied });
 };
+
+// ─── Helpers timezone ──────────────────────────────────────────────────────────
+
+/**
+ * Converte una data+ora espressa nel fuso Europe/Rome in un oggetto Date UTC.
+ * Usa Intl per ricavare l'offset reale (CET +01:00 oppure CEST +02:00),
+ * così non serve hardcodare l'offset.
+ *
+ * @param {string} dateStr  "YYYY-MM-DD"
+ * @param {string} timeStr  "HH:MM:SS"
+ * @returns {Date}
+ */
+function romeToUTC(dateStr, timeStr) {
+  // Passo 1: crea un Date trattando la stringa come se fosse UTC (senza offset)
+  const naive = new Date(`${dateStr}T${timeStr}Z`);
+  // Passo 2: calcola l'offset Rome vs UTC a quell'istante approssimativo
+  const offsetMin = getRomeOffsetMinutes(naive);
+  // Passo 3: sottrai l'offset → ora abbiamo il vero istante UTC
+  return new Date(naive.getTime() - offsetMin * 60_000);
+}
+
+/**
+ * Restituisce l'offset in minuti di Europe/Rome rispetto a UTC
+ * per l'istante dato (positivo = avanti di UTC, es. +60 per CET, +120 per CEST).
+ *
+ * @param {Date} date
+ * @returns {number}
+ */
+function getRomeOffsetMinutes(date) {
+  const utcStr  = date.toLocaleString('en-US', { timeZone: 'UTC' });
+  const romeStr = date.toLocaleString('en-US', { timeZone: 'Europe/Rome' });
+  return (new Date(romeStr) - new Date(utcStr)) / 60_000;
+}
 
 function pad(n) {
   return String(n).padStart(2, '0');
