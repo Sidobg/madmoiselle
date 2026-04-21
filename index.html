@@ -735,8 +735,16 @@
   document.getElementById('serviziGrid').addEventListener('click', function(e) {
     const card = e.target.closest('.servizio-card');
     if (!card) return;
-    document.querySelectorAll('.servizio-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.servizio-card').forEach(c => {
+      c.classList.remove('selected');
+      c.style.borderColor = '';
+      c.style.background = '';
+      c.querySelector('.servizio-nome').style.color = '';
+    });
     card.classList.add('selected');
+    card.style.borderColor = '#C9A96E';
+    card.style.background = 'rgba(201,169,110,0.12)';
+    card.querySelector('.servizio-nome').style.color = '#E2C99A';
   });
 
   renderCalendar();
