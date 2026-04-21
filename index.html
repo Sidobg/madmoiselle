@@ -511,6 +511,42 @@
     .slots-grid { grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); }
     .cal-header, .slot-header, .form-inner, .orari-card { padding: 16px; }
   }
+
+  /* Servizi */
+  .servizi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .servizio-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 22px 18px;
+    transition: border-color .25s, background .25s;
+  }
+  .servizio-card:hover {
+    border-color: rgba(201,169,110,.4);
+    background: rgba(201,169,110,.04);
+  }
+  .servizio-nome {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 300;
+    color: var(--cream);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .servizio-durata {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  @media (max-width: 480px) {
+    .servizi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
@@ -526,6 +562,18 @@
 <div class="container">
 
   <div class="section-title">Prenota il tuo appuntamento</div>
+
+
+  <!-- Servizi -->
+  <div class="section-title" style="margin-bottom:16px">I nostri servizi</div>
+  <div class="servizi-grid">
+    <div class="servizio-card"><div class="servizio-nome">Taglio</div><div class="servizio-durata">&nbsp;</div></div>
+    <div class="servizio-card"><div class="servizio-nome">Piega</div><div class="servizio-durata">&nbsp;</div></div>
+    <div class="servizio-card"><div class="servizio-nome">Colorazione</div><div class="servizio-durata">&nbsp;</div></div>
+    <div class="servizio-card"><div class="servizio-nome">Trattamenti curativi</div><div class="servizio-durata">&nbsp;</div></div>
+    <div class="servizio-card"><div class="servizio-nome">Stirature</div><div class="servizio-durata">&nbsp;</div></div>
+    <div class="servizio-card"><div class="servizio-nome">Permanenti</div><div class="servizio-durata">&nbsp;</div></div>
+  </div>
 
   <!-- Calendar -->
   <div class="calendar-card">
