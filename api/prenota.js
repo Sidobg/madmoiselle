@@ -8,7 +8,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { nome, cognome, telefono, email, note, data, ora } = req.body || {};
+  const { nome, cognome, telefono, email, note, data, ora, servizio } = req.body || {};
 
   if (!nome || !telefono || !data || !ora) {
     return res.status(400).json({ error: 'Campi obbligatori mancanti: nome, telefono, data, ora.' });
@@ -33,14 +33,15 @@ module.exports = async function handler(req, res) {
   const description = [
     `Cliente: ${nome} ${cognome || ''}`.trim(),
     `Telefono: ${telefono}`,
-    email ? `Email: ${email}` : null,
-    note  ? `Note: ${note}`  : null,
+    email    ? `Email: ${email}`       : null,
+    servizio ? `Servizio: ${servizio}` : null,
+    note     ? `Note: ${note}`         : null,
   ].filter(Boolean).join('\n');
 
   await calendar.events.insert({
     calendarId: process.env.CALENDAR_ID,
     requestBody: {
-      summary: `Appuntamento – ${nome}${cognome ? ' ' + cognome : ''}`,
+      summary: `${servizio ? servizio + ' – ' : 'Appuntamento – '}${nome}${cognome ? ' ' + cognome : ''}`,
       description,
       start: { dateTime: start.toISOString(), timeZone: 'Europe/Rome' },
       end:   { dateTime: end.toISOString(),   timeZone: 'Europe/Rome' },
@@ -66,9 +67,9 @@ module.exports = async function handler(req, res) {
 
 il tuo appuntamento è confermato.
 
-📅 Data:  ${dataLeggibile}
-🕐 Ora:   ${ora}
-${note ? '📝 Note:  ' + note + '\n' : ''}
+📅 Data:     ${dataLeggibile}
+🕐 Ora:      ${ora}
+${servizio ? '✂️ Servizio: ' + servizio + '\n' : ''}${note ? '📝 Note:     ' + note + '\n' : ''}
 Ti aspettiamo!
 
 Mademoiselle · Salone di bellezza
@@ -92,6 +93,7 @@ Clusone, Val Seriana`,
 Cliente:   ${nome}${cognome ? ' ' + cognome : ''}
 Telefono:  ${telefono}
 Email:     ${email || '—'}
+Servizio:  ${servizio || '—'}
 Data:      ${dataLeggibile}
 Ora:       ${ora}
 Note:      ${note || '—'}`,

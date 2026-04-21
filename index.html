@@ -819,6 +819,7 @@
   });
 
   document.getElementById('btnPrenota').addEventListener('click', async () => {
+    const servizio = document.querySelector('.servizio-card.selected')?.dataset?.servizio || '';
     const nome    = document.getElementById('inputNome').value.trim();
     const cognome = document.getElementById('inputCognome').value.trim();
     const tel     = document.getElementById('inputTel').value.trim();
@@ -841,7 +842,7 @@
       const resp = await fetch('/api/prenota', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, cognome, telefono: tel, email, note, data, ora: selectedSlot }),
+        body: JSON.stringify({ nome, cognome, telefono: tel, email, note, data, ora: selectedSlot, servizio }),
       });
 
       if (!resp.ok) {
