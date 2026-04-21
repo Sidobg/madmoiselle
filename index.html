@@ -745,6 +745,7 @@
     card.style.borderColor = '#C9A96E';
     card.style.background = 'rgba(201,169,110,0.12)';
     card.querySelector('.servizio-nome').style.color = '#E2C99A';
+    card.offsetHeight; // forza reflow — rompe il layer compositing dell'animazione
   });
 
   renderCalendar();
