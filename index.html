@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mademoiselle – Prenota</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080808;
+    --surface: #111111;
+    --border: #222222;
+    --gold: #C9A96E;
+    --gold-light: #E2C99A;
+    --cream: #F0EAD6;
+    --text: #D8D0C0;
+    --muted: #666;
+    --closed: #2a2a2a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* Hero */
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px 40px;
+    animation: fadeDown 1s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo-wrap {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid var(--gold);
+    box-shadow: 0 0 40px rgba(201,169,110,0.15);
+    margin-bottom: 28px;
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(201,169,110,0.1); }
+    50%       { box-shadow: 0 0 60px rgba(201,169,110,0.25); }
+  }
+
+  .logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+  .tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 4px;
+  }
+
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 24px auto;
+    animation: expandWidth 1.5s ease 0.5s forwards;
+    transform: scaleX(0);
+  }
+
+  @keyframes expandWidth {
+    to { transform: scaleX(1); }
+  }
+
+  /* Main container */
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+    animation: fadeUp 1s ease 0.3s forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Section title */
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* Calendar */
+  .calendar-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cal-month {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    color: var(--cream);
+  }
+
+  .cal-nav {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--gold);
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s;
+    border-radius: 2px;
+  }
+
+  .cal-nav:hover {
+    border-color: var(--gold);
+    background: rgba(201,169,110,0.08);
+  }
+
+  .cal-grid {
+    padding: 20px 28px 28px;
+  }
+
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 10px;
+  }
+
+  .cal-weekdays span {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 0;
+  }
+
+  .cal-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    border: 1px solid transparent;
+  }
+
+  .cal-day.empty { cursor: default; }
+
+  .cal-day.closed {
+    color: #333;
+    cursor: default;
+  }
+
+  .cal-day.past {
+    color: #2e2e2e;
+    cursor: default;
+  }
+
+  .cal-day.available {
+    color: var(--text);
+  }
+
+  .cal-day.available:hover {
+    background: rgba(201,169,110,0.1);
+    border-color: rgba(201,169,110,0.3);
+    color: var(--gold-light);
+  }
+
+  .cal-day.available::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 3px;
+    background: var(--gold);
+    border-radius: 50%;
+    opacity: 0.6;
+  }
+
+  .cal-day.selected {
+    background: var(--gold) !important;
+    border-color: var(--gold) !important;
+    color: #080808 !important;
+    font-weight: 400;
+  }
+
+  .cal-day.selected::after { display: none; }
+
+  .cal-day.today {
+    border-color: rgba(201,169,110,0.4);
+    color: var(--gold-light);
+  }
+
+  /* Slot picker */
+  .slot-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    max-height: 0;
+    transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+    opacity: 0;
+  }
+
+  .slot-panel.open {
+    max-height: 400px;
+    opacity: 1;
+  }
+
+  .slot-header {
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    letter-spacing: 1px;
+    color: var(--cream);
+  }
+
+  .slot-header span {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    padding: 20px 28px;
+    overflow-y: auto;
+    max-height: 240px;
+  }
+
+  .slot-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 6px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .slot-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold-light);
+    background: rgba(201,169,110,0.08);
+  }
+
+  .slot-btn.selected {
+    background: rgba(201,169,110,0.15);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  /* Booking form */
+  .form-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    max-height: 0;
+    transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+    opacity: 0;
+  }
+
+  .form-panel.open {
+    max-height: 500px;
+    opacity: 1;
+  }
+
+  .form-inner {
+    padding: 24px 28px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  .form-group label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .form-group input, .form-group textarea {
+    background: #0d0d0d;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+  }
+
+  .form-group input:focus, .form-group textarea:focus {
+    border-color: var(--gold);
+  }
+
+  .btn-prenota {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #C9A96E, #A8854A);
+    border: none;
+    color: #080808;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-top: 8px;
+    transition: all 0.3s;
+  }
+
+  .btn-prenota:hover {
+    background: linear-gradient(135deg, #E2C99A, #C9A96E);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(201,169,110,0.25);
+  }
+
+  /* Confirmation */
+  .confirm-banner {
+    display: none;
+    background: rgba(201,169,110,0.08);
+    border: 1px solid rgba(201,169,110,0.3);
+    border-radius: 2px;
+    padding: 20px 28px;
+    text-align: center;
+    margin-bottom: 10px;
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+  .confirm-banner p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: var(--gold-light);
+    font-style: italic;
+  }
+
+  .confirm-banner small {
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+
+  /* Orari */
+  .orari-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 28px;
+    margin-top: 32px;
+  }
+
+  .orari-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .orari-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #181818;
+  }
+
+  .orari-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .orari-row .giorno {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    color: var(--cream);
+    letter-spacing: 1px;
+  }
+
+  .orari-row .orario {
+    color: var(--gold);
+    letter-spacing: 1px;
+    font-size: 12px;
+  }
+
+  .orari-row .chiuso {
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #333;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 480px) {
+    .form-row { grid-template-columns: 1fr; }
+    .cal-grid { padding: 16px; }
+    .slots-grid { grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); }
+    .cal-header, .slot-header, .form-inner, .orari-card { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="logo-wrap">
+    <img src="data:image/jpeg;base64,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" alt="Mademoiselle logo">
+  </div>
+  <div class="tagline">Salone di bellezza · Clusone</div>
+  <div class="divider"></div>
+</div>
+
+<div class="container">
+
+  <div class="section-title">Prenota il tuo appuntamento</div>
+
+  <!-- Calendar -->
+  <div class="calendar-card">
+    <div class="cal-header">
+      <button class="cal-nav" id="prevBtn">&#8592;</button>
+      <div class="cal-month" id="calMonth"></div>
+      <button class="cal-nav" id="nextBtn">&#8594;</button>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-weekdays">
+        <span>LUN</span><span>MAR</span><span>MER</span>
+        <span>GIO</span><span>VEN</span><span>SAB</span><span>DOM</span>
+      </div>
+      <div class="cal-days" id="calDays"></div>
+    </div>
+  </div>
+
+  <!-- Slot picker -->
+  <div class="slot-panel" id="slotPanel">
+    <div class="slot-header">Orari disponibili — <span id="slotDate"></span></div>
+    <div class="slots-grid" id="slotsGrid"></div>
+  </div>
+
+  <!-- Booking form -->
+  <div class="form-panel" id="formPanel">
+    <div class="form-inner">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" id="inputNome" placeholder="Il tuo nome">
+        </div>
+        <div class="form-group">
+          <label>Cognome</label>
+          <input type="text" id="inputCognome" placeholder="Il tuo cognome">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Telefono</label>
+          <input type="tel" id="inputTel" placeholder="+39 000 000 0000">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="inputEmail" placeholder="nome@email.com">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Note (opzionale)</label>
+          <textarea id="inputNote" rows="2" placeholder="Es. tipo di servizio, preferenze…"></textarea>
+        </div>
+      </div>
+      <button class="btn-prenota" id="btnPrenota">Conferma prenotazione</button>
+    </div>
+  </div>
+
+  <!-- Confirm banner -->
+  <div class="confirm-banner" id="confirmBanner">
+    <p>Prenotazione ricevuta ✦</p>
+    <small id="confirmText"></small>
+  </div>
+
+  <!-- Orari -->
+  <div class="orari-card">
+    <div class="section-title" style="margin-bottom:20px">Orari di apertura</div>
+    <div class="orari-list">
+      <div class="orari-row"><span class="giorno">Lunedì</span><span class="chiuso">Chiuso</span></div>
+      <div class="orari-row"><span class="giorno">Martedì</span><span class="orario">9:00 – 18:00</span></div>
+      <div class="orari-row"><span class="giorno">Mercoledì</span><span class="orario">9:00 – 18:00</span></div>
+      <div class="orari-row"><span class="giorno">Giovedì</span><span class="orario">13:00 – 22:00</span></div>
+      <div class="orari-row"><span class="giorno">Venerdì</span><span class="orario">8:00 – 19:00</span></div>
+      <div class="orari-row"><span class="giorno">Sabato</span><span class="orario">7:00 – 17:00</span></div>
+      <div class="orari-row"><span class="giorno">Domenica</span><span class="chiuso">Chiuso</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">Mademoiselle &nbsp;·&nbsp; Clusone &nbsp;·&nbsp; Val Seriana</div>
+
+<script>
+  // ─── Opening hours ───
+  const hours = {
+    2: { start: 9, end: 18 },   // Martedì
+    3: { start: 9, end: 18 },   // Mercoledì
+    4: { start: 13, end: 22 },  // Giovedì
+    5: { start: 8, end: 19 },   // Venerdì
+    6: { start: 7, end: 17 },   // Sabato
+  };
+
+  const months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+                  'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  const now = new Date();
+  let currentYear = now.getFullYear();
+  let currentMonth = now.getMonth();
+  let selectedDay = null;
+  let selectedSlot = null;
+
+  function renderCalendar() {
+    const calMonth = document.getElementById('calMonth');
+    const calDays  = document.getElementById('calDays');
+
+    calMonth.textContent = months[currentMonth] + ' ' + currentYear;
+    calDays.innerHTML = '';
+
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    // Monday-based grid
+    let startOffset = firstDay.getDay() - 1;
+    if (startOffset < 0) startOffset = 6;
+
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    for (let i = 0; i < startOffset; i++) {
+      const empty = document.createElement('div');
+      empty.className = 'cal-day empty';
+      calDays.appendChild(empty);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date  = new Date(currentYear, currentMonth, d);
+      const dow   = date.getDay(); // 0=Sun,1=Mon,...,6=Sat
+      const el    = document.createElement('div');
+      el.className = 'cal-day';
+      el.textContent = d;
+
+      if (date < today) {
+        el.classList.add('past');
+      } else if (!hours[dow]) {
+        el.classList.add('closed');
+      } else {
+        el.classList.add('available');
+        if (date.toDateString() === today.toDateString()) el.classList.add('today');
+        if (selectedDay && date.toDateString() === selectedDay.toDateString()) el.classList.add('selected');
+
+        el.addEventListener('click', () => selectDay(date, el));
+      }
+      calDays.appendChild(el);
+    }
+  }
+
+  function selectDay(date, el) {
+    selectedDay = date;
+    selectedSlot = null;
+    document.getElementById('formPanel').classList.remove('open');
+    document.getElementById('confirmBanner').style.display = 'none';
+    renderCalendar();
+    showSlots(date);
+  }
+
+  function showSlots(date) {
+    const dow = date.getDay();
+    const h = hours[dow];
+    if (!h) return;
+
+    const dayNames = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+    document.getElementById('slotDate').textContent =
+      dayNames[dow] + ' ' + date.getDate() + ' ' + months[date.getMonth()];
+
+    const grid = document.getElementById('slotsGrid');
+    grid.innerHTML = '';
+
+    for (let hour = h.start; hour < h.end; hour++) {
+      for (let min of [0, 30]) {
+        const label = `${String(hour).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
+        const btn = document.createElement('button');
+        btn.className = 'slot-btn';
+        btn.textContent = label;
+        btn.addEventListener('click', () => selectSlot(label, btn));
+        grid.appendChild(btn);
+      }
+    }
+
+    const panel = document.getElementById('slotPanel');
+    panel.classList.add('open');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function selectSlot(label, btn) {
+    selectedSlot = label;
+    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+
+    const form = document.getElementById('formPanel');
+    form.classList.add('open');
+    setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    currentMonth--;
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    renderCalendar();
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    currentMonth++;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    renderCalendar();
+  });
+
+  document.getElementById('btnPrenota').addEventListener('click', () => {
+    const nome = document.getElementById('inputNome').value.trim();
+    const tel  = document.getElementById('inputTel').value.trim();
+    if (!nome || !tel) { alert('Inserisci almeno nome e telefono.'); return; }
+
+    const dayNames = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+    const dow = selectedDay.getDay();
+    const dateStr = dayNames[dow] + ' ' + selectedDay.getDate() + ' ' + months[selectedDay.getMonth()];
+    const text = `${nome} · ${dateStr} alle ${selectedSlot}`;
+
+    document.getElementById('confirmText').textContent = 'Riceverai una conferma a breve — ' + text;
+    document.getElementById('confirmBanner').style.display = 'block';
+    document.getElementById('formPanel').classList.remove('open');
+    document.getElementById('slotPanel').classList.remove('open');
+    selectedDay = null;
+    selectedSlot = null;
+    renderCalendar();
+    document.getElementById('confirmBanner').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  renderCalendar();
+</script>
+</body>
+</html>
