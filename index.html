@@ -25,7 +25,7 @@
     background-image: url('./bg.webp');
     background-size: cover;
     background-position: center top;
-    background-attachment: fixed;
+    background-attachment: scroll;
     color: var(--text);
     font-family: 'Jost', sans-serif;
     font-weight: 300;
@@ -573,6 +573,15 @@
 
   /* Footer */
   .footer { color: #b0a090; }
+
+  @media (max-width: 600px) {
+    body {
+      background-image: url('./bg-mobile.webp');
+      background-size: cover;
+      background-position: center top;
+      background-attachment: scroll;
+    }
+  }
 </style>
 </head>
 <body>
