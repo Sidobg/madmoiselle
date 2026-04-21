@@ -327,6 +327,24 @@
     color: var(--gold);
   }
 
+  .slot-btn.occupied {
+    color: #2e2e2e;
+    border-color: #1e1e1e;
+    background: #0e0e0e;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    text-decoration-color: #2e2e2e;
+  }
+
+  .slots-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    padding: 16px 0;
+  }
+
   /* Booking form */
   .form-panel {
     background: var(--surface);
@@ -658,7 +676,7 @@
     showSlots(date);
   }
 
-  function showSlots(date) {
+  async function showSlots(date) {
     const dow = date.getDay();
     const h = hours[dow];
     if (!h) return;
@@ -668,6 +686,29 @@
       dayNames[dow] + ' ' + date.getDate() + ' ' + months[date.getMonth()];
 
     const grid = document.getElementById('slotsGrid');
+    grid.innerHTML = '<div class="slots-loading">Caricamento orari…</div>';
+
+    const panel = document.getElementById('slotPanel');
+    panel.classList.add('open');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Recupera slot occupati dal calendario
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const dataStr = `${y}-${m}-${d}`;
+
+    let occupied = [];
+    try {
+      const resp = await fetch(`/api/slots?data=${dataStr}`);
+      if (resp.ok) {
+        const json = await resp.json();
+        occupied = json.occupied || [];
+      }
+    } catch (_) {
+      // In caso di errore di rete mostriamo comunque gli slot (non bloccante)
+    }
+
     grid.innerHTML = '';
 
     for (let hour = h.start; hour < h.end; hour++) {
@@ -676,14 +717,17 @@
         const btn = document.createElement('button');
         btn.className = 'slot-btn';
         btn.textContent = label;
-        btn.addEventListener('click', () => selectSlot(label, btn));
+
+        if (occupied.includes(label)) {
+          btn.classList.add('occupied');
+          btn.disabled = true;
+        } else {
+          btn.addEventListener('click', () => selectSlot(label, btn));
+        }
+
         grid.appendChild(btn);
       }
     }
-
-    const panel = document.getElementById('slotPanel');
-    panel.classList.add('open');
-    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   function selectSlot(label, btn) {
