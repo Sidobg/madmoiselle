@@ -520,6 +520,7 @@
     margin-bottom: 10px;
   }
   .servizio-card {
+    cursor: pointer;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 2px;
@@ -547,6 +548,14 @@
   @media (max-width: 480px) {
     .servizi-grid { grid-template-columns: repeat(2, 1fr); }
   }
+
+  .servizio-card.selected {
+    border-color: var(--gold);
+    background: rgba(201,169,110,0.12);
+  }
+  .servizio-card.selected .servizio-nome {
+    color: var(--gold-light);
+  }
 </style>
 </head>
 <body>
@@ -562,18 +571,6 @@
 <div class="container">
 
   <div class="section-title">Prenota il tuo appuntamento</div>
-
-
-  <!-- Servizi -->
-  <div class="section-title" style="margin-bottom:16px">I nostri servizi</div>
-  <div class="servizi-grid">
-    <div class="servizio-card"><div class="servizio-nome">Taglio</div><div class="servizio-durata">&nbsp;</div></div>
-    <div class="servizio-card"><div class="servizio-nome">Piega</div><div class="servizio-durata">&nbsp;</div></div>
-    <div class="servizio-card"><div class="servizio-nome">Colorazione</div><div class="servizio-durata">&nbsp;</div></div>
-    <div class="servizio-card"><div class="servizio-nome">Trattamenti curativi</div><div class="servizio-durata">&nbsp;</div></div>
-    <div class="servizio-card"><div class="servizio-nome">Stirature</div><div class="servizio-durata">&nbsp;</div></div>
-    <div class="servizio-card"><div class="servizio-nome">Permanenti</div><div class="servizio-durata">&nbsp;</div></div>
-  </div>
 
   <!-- Calendar -->
   <div class="calendar-card">
@@ -634,6 +631,18 @@
   <div class="confirm-banner" id="confirmBanner">
     <p>Prenotazione ricevuta ✦</p>
     <small id="confirmText"></small>
+  </div>
+
+
+  <!-- Servizi -->
+  <div class="section-title" style="margin-top:32px;margin-bottom:16px">I nostri servizi</div>
+  <div class="servizi-grid" id="serviziGrid">
+    <div class="servizio-card" data-servizio="Taglio"><div class="servizio-nome">Taglio</div><div class="servizio-durata">&nbsp;</div></div>
+    <div class="servizio-card" data-servizio="Piega"><div class="servizio-nome">Piega</div><div class="servizio-durata">&nbsp;</div></div>
+    <div class="servizio-card" data-servizio="Colorazione"><div class="servizio-nome">Colorazione</div><div class="servizio-durata">&nbsp;</div></div>
+    <div class="servizio-card" data-servizio="Trattamenti curativi"><div class="servizio-nome">Trattamenti curativi</div><div class="servizio-durata">&nbsp;</div></div>
+    <div class="servizio-card" data-servizio="Stirature"><div class="servizio-nome">Stirature</div><div class="servizio-durata">&nbsp;</div></div>
+    <div class="servizio-card" data-servizio="Permanenti"><div class="servizio-nome">Permanenti</div><div class="servizio-durata">&nbsp;</div></div>
   </div>
 
   <!-- Orari -->
@@ -720,7 +729,16 @@
     selectedSlot = null;
     document.getElementById('formPanel').classList.remove('open');
     document.getElementById('confirmBanner').style.display = 'none';
-    renderCalendar();
+  
+  // ─── Selezione servizio ───
+  document.querySelectorAll('.servizio-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.servizio-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+  });
+
+  renderCalendar();
     showSlots(date);
   }
 
