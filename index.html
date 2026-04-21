@@ -708,24 +708,61 @@
     renderCalendar();
   });
 
-  document.getElementById('btnPrenota').addEventListener('click', () => {
-    const nome = document.getElementById('inputNome').value.trim();
-    const tel  = document.getElementById('inputTel').value.trim();
+  document.getElementById('btnPrenota').addEventListener('click', async () => {
+    const nome    = document.getElementById('inputNome').value.trim();
+    const cognome = document.getElementById('inputCognome').value.trim();
+    const tel     = document.getElementById('inputTel').value.trim();
+    const email   = document.getElementById('inputEmail').value.trim();
+    const note    = document.getElementById('inputNote').value.trim();
+
     if (!nome || !tel) { alert('Inserisci almeno nome e telefono.'); return; }
 
-    const dayNames = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
-    const dow = selectedDay.getDay();
-    const dateStr = dayNames[dow] + ' ' + selectedDay.getDate() + ' ' + months[selectedDay.getMonth()];
-    const text = `${nome} · ${dateStr} alle ${selectedSlot}`;
+    // Formatta la data come YYYY-MM-DD
+    const y  = selectedDay.getFullYear();
+    const m  = String(selectedDay.getMonth() + 1).padStart(2, '0');
+    const d  = String(selectedDay.getDate()).padStart(2, '0');
+    const data = `${y}-${m}-${d}`;
 
-    document.getElementById('confirmText').textContent = 'Riceverai una conferma a breve — ' + text;
-    document.getElementById('confirmBanner').style.display = 'block';
-    document.getElementById('formPanel').classList.remove('open');
-    document.getElementById('slotPanel').classList.remove('open');
-    selectedDay = null;
-    selectedSlot = null;
-    renderCalendar();
-    document.getElementById('confirmBanner').scrollIntoView({ behavior: 'smooth' });
+    const btn = document.getElementById('btnPrenota');
+    btn.disabled = true;
+    btn.textContent = 'Invio in corso…';
+
+    try {
+      const resp = await fetch('/api/prenota', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, cognome, telefono: tel, email, note, data, ora: selectedSlot }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'Errore del server');
+      }
+
+      const dayNames = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+      const dow = selectedDay.getDay();
+      const dateStr = dayNames[dow] + ' ' + selectedDay.getDate() + ' ' + months[selectedDay.getMonth()];
+      const text = `${nome} · ${dateStr} alle ${selectedSlot}`;
+
+      document.getElementById('confirmText').textContent = 'Riceverai una conferma a breve — ' + text;
+      document.getElementById('confirmBanner').style.display = 'block';
+      document.getElementById('formPanel').classList.remove('open');
+      document.getElementById('slotPanel').classList.remove('open');
+      selectedDay = null;
+      selectedSlot = null;
+      renderCalendar();
+      document.getElementById('confirmBanner').scrollIntoView({ behavior: 'smooth' });
+
+      // Reset form
+      ['inputNome','inputCognome','inputTel','inputEmail','inputNote'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+    } catch (e) {
+      alert('Si è verificato un errore: ' + e.message + '\nRiprova o contattaci telefonicamente.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Conferma prenotazione';
+    }
   });
 
   renderCalendar();
