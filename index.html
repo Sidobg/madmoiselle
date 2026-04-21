@@ -7,21 +7,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #080808;
-    --surface: #111111;
-    --border: #222222;
-    --gold: #C9A96E;
-    --gold-light: #E2C99A;
-    --cream: #F0EAD6;
-    --text: #D8D0C0;
-    --muted: #666;
-    --closed: #2a2a2a;
+    --bg: transparent;
+    --surface: rgba(255,255,255,0.55);
+    --border: rgba(180,150,100,0.25);
+    --gold: #A0784A;
+    --gold-light: #C9A96E;
+    --cream: #2a2218;
+    --text: #3a2e22;
+    --muted: #8a7a6a;
+    --closed: rgba(0,0,0,0.08);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: var(--bg);
+    background-color: #F5EDE0;
+    background-image: url('./bg.png');
+    background-size: cover;
+    background-position: center top;
+    background-attachment: fixed;
     color: var(--text);
     font-family: 'Jost', sans-serif;
     font-weight: 300;
@@ -539,6 +543,36 @@
   .select-wrap select:focus,
   .select-wrap select:hover { border-color: var(--gold); }
   .select-wrap select option { background: #111; color: var(--text); }
+
+  /* Glassmorphism */
+  .calendar-card,
+  .slot-panel,
+  .form-panel,
+  .orari-card,
+  .select-wrap select {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 4px 24px rgba(160,120,74,0.08);
+  }
+
+  /* Input fields adattati al tema chiaro */
+  .form-group input,
+  .form-group textarea {
+    background: rgba(255,255,255,0.6);
+    color: var(--text);
+  }
+  .form-group input::placeholder,
+  .form-group textarea::placeholder { color: var(--muted); }
+
+  /* Slot btn tema chiaro */
+  .slot-btn { color: var(--text); }
+  .slot-btn.occupied { color: #bbb; border-color: #ddd; background: rgba(0,0,0,0.03); }
+
+  /* Confirm banner */
+  .confirm-banner { background: rgba(201,169,110,0.12); }
+
+  /* Footer */
+  .footer { color: #b0a090; }
 </style>
 </head>
 <body>
