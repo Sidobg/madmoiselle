@@ -22,7 +22,7 @@ module.exports = async function handler(req, res) {
   auth.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
 
   // ─── Leggi eventi del giorno ───────────────────────────────────
-  // timeMin/timeMax convertiti da ora di Roma a UTC (gestisce CET +01 e CEST +02)
+  // timeMin/timeMax: mezzanotte e fine giornata in ora di Roma → UTC
   const calendar = google.calendar({ version: 'v3', auth });
 
   const timeMin = romeToUTC(data, '00:00:00').toISOString();
@@ -40,24 +40,28 @@ module.exports = async function handler(req, res) {
   const events = calData.items || [];
 
   // ─── Calcola slot occupati ─────────────────────────────────────
-  // Un slot HH:MM (durata 30 min) è occupato se un evento si sovrappone
-  // all'intervallo [slotStart, slotStart + 30 min).
-  // slotStart è costruito in ora di Roma → convertito a UTC per confronto corretto.
-  const SLOT_MS = 30 * 60 * 1000;
+  // Lavoriamo interamente in minuti-dalla-mezzanotte nel fuso Europe/Rome.
+  // Gli orari degli eventi vengono estratti in ora locale di Roma tramite Intl,
+  // quindi non dipendono da come Google li restituisce (con/senza offset, Z, ecc.).
+  //
+  // Uno slot HH:MM è occupato se qualsiasi evento si sovrappone a
+  // [slotStart, slotStart + 30 min) in ora di Roma.
+
   const occupied = [];
 
   for (let h = 7; h < 22; h++) {
     for (const m of [0, 30]) {
-      const slotStart = romeToUTC(data, `${pad(h)}:${pad(m)}:00`);
-      const slotEnd   = new Date(slotStart.getTime() + SLOT_MS);
+      const slotStart = h * 60 + m;       // minuti dalla mezzanotte (ora Roma)
+      const slotEnd   = slotStart + 30;
 
       const isOccupied = events.some(ev => {
         // Ignora eventi tutto-il-giorno (senza dateTime)
         if (!ev.start?.dateTime) return false;
-        // Google Calendar restituisce dateTime con offset incluso (es. 09:00:00+02:00)
-        // new Date() lo converte correttamente in UTC
-        const evStart = new Date(ev.start.dateTime);
-        const evEnd   = new Date(ev.end.dateTime);
+
+        // Converte start/end dell'evento in minuti-dalla-mezzanotte di Roma
+        const evStart = toRomeMinutes(ev.start.dateTime);
+        const evEnd   = toRomeMinutes(ev.end.dateTime);
+
         return evStart < slotEnd && evEnd > slotStart;
       });
 
@@ -71,26 +75,46 @@ module.exports = async function handler(req, res) {
 // ─── Helpers timezone ──────────────────────────────────────────────────────────
 
 /**
- * Converte una data+ora espressa nel fuso Europe/Rome in un oggetto Date UTC.
- * Usa Intl per ricavare l'offset reale (CET +01:00 oppure CEST +02:00),
- * così non serve hardcodare l'offset.
+ * Estrae l'ora di un evento (dateTimeStr ISO con o senza offset)
+ * e la restituisce come minuti dalla mezzanotte nel fuso Europe/Rome.
+ *
+ * Usa Intl → corretto indipendentemente da come Google restituisce il campo
+ * (es. "2026-04-21T14:00:00Z", "2026-04-21T16:00:00+02:00", "2026-04-21T16:00:00").
+ *
+ * @param {string} dateTimeStr
+ * @returns {number}  es. 16:00 → 960
+ */
+function toRomeMinutes(dateTimeStr) {
+  const date = new Date(dateTimeStr);
+  // Forza interpretazione del fuso Europe/Rome
+  const str = date.toLocaleString('en-US', {
+    timeZone: 'Europe/Rome',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  // str è tipo "16:00" o "09:30"
+  const [h, m] = str.split(':').map(Number);
+  return h * 60 + m;
+}
+
+/**
+ * Converte una data+ora espressa in Europe/Rome nel corrispondente Date UTC.
+ * Determina CET (+01:00) o CEST (+02:00) dinamicamente tramite Intl.
  *
  * @param {string} dateStr  "YYYY-MM-DD"
  * @param {string} timeStr  "HH:MM:SS"
  * @returns {Date}
  */
 function romeToUTC(dateStr, timeStr) {
-  // Passo 1: crea un Date trattando la stringa come se fosse UTC (senza offset)
-  const naive = new Date(`${dateStr}T${timeStr}Z`);
-  // Passo 2: calcola l'offset Rome vs UTC a quell'istante approssimativo
+  const naive     = new Date(`${dateStr}T${timeStr}Z`);
   const offsetMin = getRomeOffsetMinutes(naive);
-  // Passo 3: sottrai l'offset → ora abbiamo il vero istante UTC
   return new Date(naive.getTime() - offsetMin * 60_000);
 }
 
 /**
- * Restituisce l'offset in minuti di Europe/Rome rispetto a UTC
- * per l'istante dato (positivo = avanti di UTC, es. +60 per CET, +120 per CEST).
+ * Offset in minuti di Europe/Rome vs UTC per l'istante dato.
+ * Restituisce +60 (CET) o +120 (CEST).
  *
  * @param {Date} date
  * @returns {number}
