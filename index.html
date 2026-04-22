@@ -819,9 +819,6 @@
 
     grid.innerHTML = '';
 
-    const servizio = document.getElementById('selectServizio').value;
-    const durataOre = durate[servizio] || 1;
-
     for (let hour = h.start; hour < h.end; hour++) {
       for (let min of [0, 30]) {
         const label = `${String(hour).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
@@ -829,20 +826,7 @@
         btn.className = 'slot-btn';
         btn.textContent = label;
 
-        const slotMin = hour * 60 + min;
-        const endMin  = slotMin + durataOre * 60;
-
-        // Blocca se il servizio sfora l'orario di chiusura
-        const oltreChiusura = endMin > h.end * 60;
-
-        // Blocca se almeno uno dei blocchi da 30min è occupato
-        const accavalla = occupied.some(occ => {
-          const [oh, om] = occ.split(':').map(Number);
-          const occMin = oh * 60 + om;
-          return occMin >= slotMin && occMin < endMin;
-        });
-
-        if (oltreChiusura || accavalla) {
+        if (occupied.includes(label)) {
           btn.classList.add('occupied');
           btn.disabled = true;
         } else {
