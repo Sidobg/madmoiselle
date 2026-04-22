@@ -601,6 +601,17 @@
   @media (max-width: 480px) {
     .hero-title { font-size: 30px; letter-spacing: 8px; }
   }
+
+  .field-error {
+    font-size: 11px;
+    color: #c0392b;
+    letter-spacing: 1px;
+    margin-top: 4px;
+    display: none;
+  }
+  .form-group input.invalid {
+    border-color: #c0392b;
+  }
 </style>
 </head>
 <body>
@@ -675,6 +686,7 @@
         <div class="form-group">
           <label>Telefono</label>
           <input type="tel" id="inputTel" placeholder="+39 000 000 0000">
+          <span class="field-error" id="telError">Il numero di telefono è obbligatorio</span>
         </div>
         <div class="form-group">
           <label>Email</label>
@@ -917,7 +929,20 @@
     const email   = document.getElementById('inputEmail').value.trim();
     const note    = document.getElementById('inputNote').value.trim();
 
-    if (!nome || !tel) { alert('Inserisci almeno nome e telefono.'); return; }
+    // Validazione
+    document.getElementById('inputTel').classList.remove('invalid');
+    document.getElementById('telError').style.display = 'none';
+
+    if (!nome) { alert('Inserisci il tuo nome.'); return; }
+    if (!tel) {
+      const input = document.getElementById('inputTel');
+      input.classList.add('invalid');
+      document.getElementById('telError').style.display = 'block';
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      input.focus();
+      return;
+    }
+    if (!servizio) { alert('Seleziona un servizio prima di confermare.'); return; }
 
     // Formatta la data come YYYY-MM-DD
     const y  = selectedDay.getFullYear();
