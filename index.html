@@ -781,7 +781,9 @@
     selectedSlot = null;
     document.getElementById('formPanel').classList.remove('open');
     document.getElementById('confirmBanner').style.display = 'none';
-  
+    renderCalendar();
+    showSlots(date);
+  }
 
   // Mostra calendario solo dopo aver scelto il servizio
   document.getElementById('selectServizio').addEventListener('change', function() {
@@ -800,8 +802,6 @@
   });
 
   renderCalendar();
-    showSlots(date);
-  }
 
   const DURATE = {
     'Taglio': 30,
