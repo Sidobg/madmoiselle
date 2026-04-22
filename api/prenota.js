@@ -28,7 +28,8 @@ module.exports = async function handler(req, res) {
   // Convertiamo l'ora di Roma in UTC tramite Intl (gestisce CET +01 e CEST +02)
   const [year, month, day] = data.split('-').map(Number);
   const start = romeToUTC(data, `${ora}:00`);
-  const end   = new Date(start.getTime() + 60 * 60 * 1000); // durata 1 ora
+  const durata = servizio === 'Permanenti' ? 2 : 1; // Permanenti = 2 ore
+  const end   = new Date(start.getTime() + durata * 60 * 60 * 1000);
 
   const description = [
     `Cliente: ${nome} ${cognome || ''}`.trim(),
