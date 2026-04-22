@@ -28,8 +28,12 @@ module.exports = async function handler(req, res) {
   // Convertiamo l'ora di Roma in UTC tramite Intl (gestisce CET +01 e CEST +02)
   const [year, month, day] = data.split('-').map(Number);
   const start = romeToUTC(data, `${ora}:00`);
-  const durata = servizio === 'Permanenti' ? 2 : 1; // Permanenti = 2 ore
-  const end   = new Date(start.getTime() + durata * 60 * 60 * 1000);
+  const DURATE_MIN = {
+    'Taglio': 30, 'Piega': 30, 'Colorazione': 60,
+    'Trattamenti curativi': 90, 'Stirature': 60, 'Permanenti': 120,
+  };
+  const duratMin = DURATE_MIN[servizio] || 60;
+  const end = new Date(start.getTime() + duratMin * 60 * 1000);
 
   const description = [
     `Cliente: ${nome} ${cognome || ''}`.trim(),
