@@ -633,7 +633,10 @@
   </div>
 
   <!-- Calendar -->
-  <div class="calendar-card">
+  <div id="calLock" style="text-align:center;padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:2px;margin-bottom:10px;font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--muted);letter-spacing:1px;">
+    ✦ Seleziona prima un servizio per vedere gli orari disponibili
+  </div>
+  <div class="calendar-card" id="calendarCard" style="display:none">
     <div class="cal-header">
       <button class="cal-nav" id="prevBtn">&#8592;</button>
       <div class="cal-month" id="calMonth"></div>
@@ -780,13 +783,33 @@
     document.getElementById('confirmBanner').style.display = 'none';
   
 
+  // Mostra calendario solo dopo aver scelto il servizio
+  document.getElementById('selectServizio').addEventListener('change', function() {
+    const scelto = this.value;
+    if (scelto) {
+      document.getElementById('calLock').style.display = 'none';
+      document.getElementById('calendarCard').style.display = 'block';
+      // Se era già selezionato un giorno, ricarica gli slot con la nuova durata
+      if (selectedDay) showSlots(selectedDay);
+    } else {
+      document.getElementById('calLock').style.display = 'block';
+      document.getElementById('calendarCard').style.display = 'none';
+      document.getElementById('slotPanel').classList.remove('open');
+      document.getElementById('formPanel').classList.remove('open');
+    }
+  });
+
   renderCalendar();
     showSlots(date);
   }
 
   const DURATE = {
-    'Taglio': 1, 'Piega': 1, 'Colorazione': 1,
-    'Trattamenti curativi': 1, 'Stirature': 1, 'Permanenti': 2,
+    'Taglio': 30,
+    'Piega': 30,
+    'Colorazione': 60,
+    'Trattamenti curativi': 90,
+    'Stirature': 60,
+    'Permanenti': 120,
   };
 
   async function showSlots(date) {
@@ -824,35 +847,41 @@
 
     grid.innerHTML = '';
 
-    const servizioSel = document.getElementById('selectServizio').value;
-    const durataOre   = DURATE[servizioSel] || 1;
+    const servizioSel  = document.getElementById('selectServizio').value;
+    const duratMin     = DURATE[servizioSel] || 30;
+    const chiusuraMin  = h.end * 60;
+
+    // Costruisce set di minuti occupati da eventi esistenti
+    const occupiedSet = new Set();
+    occupied.forEach(occ => {
+      const [oh, om] = occ.split(':').map(Number);
+      occupiedSet.add(oh * 60 + om);
+    });
 
     for (let hr = h.start; hr < h.end; hr++) {
       for (let mn of [0, 30]) {
-        const label    = `${String(hr).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;
-        const slotMin  = hr * 60 + mn;
-        const endMin   = slotMin + durataOre * 60;
-        const btn      = document.createElement('button');
-        btn.className  = 'slot-btn';
+        const slotMin = hr * 60 + mn;
+        const endMin  = slotMin + duratMin;
+        const label   = `${String(hr).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;
+        const btn     = document.createElement('button');
+        btn.className = 'slot-btn';
         btn.textContent = label;
 
-        // Blocca se sfora l'orario di chiusura
-        const sfora = endMin > h.end * 60;
+        // Slot non disponibile se: sfora la chiusura
+        // OPPURE almeno uno dei blocchi da 30min necessari è occupato
+        let bloccato = endMin > chiusuraMin;
+        if (!bloccato) {
+          for (let t = slotMin; t < endMin; t += 30) {
+            if (occupiedSet.has(t)) { bloccato = true; break; }
+          }
+        }
 
-        // Blocca se almeno uno dei blocchi necessari è occupato
-        const accavalla = occupied.some(occ => {
-          const [oh, om] = occ.split(':').map(Number);
-          const occMin = oh * 60 + om;
-          return occMin >= slotMin && occMin < endMin;
-        });
-
-        if (sfora || accavalla) {
+        if (bloccato) {
           btn.classList.add('occupied');
           btn.disabled = true;
         } else {
           btn.addEventListener('click', () => selectSlot(label, btn));
         }
-
         grid.appendChild(btn);
       }
     }
