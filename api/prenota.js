@@ -3,7 +3,7 @@ const { google } = require('googleapis');
 const BASE_URL = process.env.BASE_URL || 'https://madmoiselle.vercel.app';
 
 const DURATE_MIN = {
-  'Taglio': 30,
+  'Taglio Donna': 30,
   'Taglio Uomo': 30,
   'Piega': 15,
   'Taglio+Piega': 45,
