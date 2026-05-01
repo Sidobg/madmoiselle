@@ -1,5 +1,18 @@
 const { google } = require('googleapis');
 
+const BASE_URL = process.env.BASE_URL || 'https://madmoiselle.vercel.app';
+
+const DURATE_MIN = {
+  'Taglio': 30,
+  'Taglio Uomo': 30,
+  'Piega': 15,
+  'Taglio+Piega': 45,
+  'Colorazione': 60,
+  'Colore+Piega': 75,
+  'Colore+Taglio+Piega': 90,
+  'Schiariture': 180,
+};
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -14,26 +27,18 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Campi obbligatori mancanti: nome, telefono, data, ora.' });
   }
 
-  // ─── Auth OAuth2 ───────────────────────────────────────────────
   const auth = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET
   );
   auth.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
 
-  // ─── Google Calendar ───────────────────────────────────────────
   const calendar = google.calendar({ version: 'v3', auth });
 
-  // data: "YYYY-MM-DD", ora: "HH:MM"
-  // Convertiamo l'ora di Roma in UTC tramite Intl (gestisce CET +01 e CEST +02)
   const [year, month, day] = data.split('-').map(Number);
-  const start = romeToUTC(data, `${ora}:00`);
-  const DURATE_MIN = {
-    'Taglio': 30, 'Piega': 30, 'Colorazione': 60,
-    'Trattamenti curativi': 90, 'Stirature': 60, 'Permanenti': 120,
-  };
+  const start    = romeToUTC(data, `${ora}:00`);
   const duratMin = DURATE_MIN[servizio] || 60;
-  const end = new Date(start.getTime() + duratMin * 60 * 1000);
+  const end      = new Date(start.getTime() + duratMin * 60 * 1000);
 
   const description = [
     `Cliente: ${nome} ${cognome || ''}`.trim(),
@@ -43,7 +48,7 @@ module.exports = async function handler(req, res) {
     note     ? `Note: ${note}`         : null,
   ].filter(Boolean).join('\n');
 
-  await calendar.events.insert({
+  const { data: eventData } = await calendar.events.insert({
     calendarId: process.env.CALENDAR_ID,
     requestBody: {
       summary: `${servizio ? servizio + ' – ' : 'Appuntamento – '}${nome}${cognome ? ' ' + cognome : ''}`,
@@ -53,12 +58,10 @@ module.exports = async function handler(req, res) {
     },
   });
 
-  // ─── Gmail ─────────────────────────────────────────────────────
-  const gmail = google.gmail({ version: 'v1', auth });
-
+  const cancelUrl   = `${BASE_URL}/api/cancella?token=${eventData.id}`;
+  const gmail       = google.gmail({ version: 'v1', auth });
   const dataLeggibile = `${pad(day)}/${pad(month)}/${year}`;
 
-  // Email al cliente (solo se ha fornito l'indirizzo)
   if (email) {
     await gmail.users.messages.send({
       userId: 'me',
@@ -74,7 +77,19 @@ il tuo appuntamento è confermato.
 
 📅 Data:     ${dataLeggibile}
 🕐 Ora:      ${ora}
-${servizio ? '✂️ Servizio: ' + servizio + '\n' : ''}${note ? '📝 Note:     ' + note + '\n' : ''}
+✂️  Servizio: ${servizio || '—'}
+${note ? '📝 Note:     ' + note + '\n' : ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DISDETTA O MODIFICA APPUNTAMENTO
+Puoi cancellare il tuo appuntamento cliccando qui:
+${cancelUrl}
+
+Per spostare l'appuntamento contattaci telefonicamente.
+
+⚠️  IMPORTANTE: In caso di ritardo superiore a 10 minuti
+l'appuntamento verrà automaticamente annullato.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Ti aspettiamo!
 
 Mademoiselle · Salone di bellezza
@@ -84,7 +99,6 @@ Clusone, Val Seriana`,
     });
   }
 
-  // Email di notifica alla titolare
   await gmail.users.messages.send({
     userId: 'me',
     requestBody: {
@@ -101,7 +115,9 @@ Email:     ${email || '—'}
 Servizio:  ${servizio || '—'}
 Data:      ${dataLeggibile}
 Ora:       ${ora}
-Note:      ${note || '—'}`,
+Note:      ${note || '—'}
+
+Link cancellazione: ${cancelUrl}`,
       }),
     },
   });
@@ -109,40 +125,20 @@ Note:      ${note || '—'}`,
   return res.status(200).json({ ok: true });
 };
 
-// ─── Helpers ────────────────────────────────────────────────────
-
-/**
- * Converte una data+ora espressa in Europe/Rome nel corrispondente Date UTC.
- * Determina CET (+01:00) o CEST (+02:00) dinamicamente tramite Intl.
- *
- * @param {string} dateStr  "YYYY-MM-DD"
- * @param {string} timeStr  "HH:MM:SS"
- * @returns {Date}
- */
 function romeToUTC(dateStr, timeStr) {
   const naive     = new Date(`${dateStr}T${timeStr}Z`);
   const offsetMin = getRomeOffsetMinutes(naive);
   return new Date(naive.getTime() - offsetMin * 60_000);
 }
 
-/**
- * Offset in minuti di Europe/Rome vs UTC per l'istante dato.
- * Restituisce +60 (CET) o +120 (CEST).
- */
 function getRomeOffsetMinutes(date) {
   const utcStr  = date.toLocaleString('en-US', { timeZone: 'UTC' });
   const romeStr = date.toLocaleString('en-US', { timeZone: 'Europe/Rome' });
   return (new Date(romeStr) - new Date(utcStr)) / 60_000;
 }
 
-function pad(n) {
-  return String(n).padStart(2, '0');
-}
+function pad(n) { return String(n).padStart(2, '0'); }
 
-/**
- * Costruisce un messaggio RFC 2822 codificato in base64url
- * pronto per l'API Gmail.
- */
 function buildEmail({ to, from, subject, body }) {
   const encodedSubject = `=?UTF-8?B?${Buffer.from(subject).toString('base64')}?=`;
   const mime = [
@@ -155,6 +151,5 @@ function buildEmail({ to, from, subject, body }) {
     '',
     Buffer.from(body, 'utf8').toString('base64'),
   ].join('\r\n');
-
   return Buffer.from(mime).toString('base64url');
 }
