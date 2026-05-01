@@ -50,9 +50,9 @@ module.exports = async function handler(req, res) {
   const occupied = [];
 
   for (let h = 7; h < 22; h++) {
-    for (const m of [0, 30]) {
+    for (const m of [0, 15, 30, 45]) {
       const slotStart = h * 60 + m;       // minuti dalla mezzanotte (ora Roma)
-      const slotEnd   = slotStart + 30;
+      const slotEnd   = slotStart + 15;
 
       const isOccupied = events.some(ev => {
         // Ignora eventi tutto-il-giorno (senza dateTime)

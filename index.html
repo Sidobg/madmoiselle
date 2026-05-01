@@ -639,11 +639,13 @@
     <select id="selectServizio">
       <option value="">— Scegli un servizio —</option>
       <option value="Taglio">Taglio</option>
+      <option value="Taglio Uomo">Taglio Uomo</option>
       <option value="Piega">Piega</option>
+      <option value="Taglio+Piega">Taglio+Piega</option>
       <option value="Colorazione">Colorazione</option>
-      <option value="Trattamenti curativi">Trattamenti curativi</option>
-      <option value="Stirature">Stirature</option>
-      <option value="Permanenti">Permanenti</option>
+      <option value="Colore+Piega">Colore+Piega</option>
+      <option value="Colore+Taglio+Piega">Colore+Taglio+Piega</option>
+      <option value="Schiariture">Schiariture</option>
     </select>
   </div>
 
@@ -821,11 +823,13 @@
 
   const DURATE = {
     'Taglio': 30,
-    'Piega': 30,
+    'Taglio Uomo': 30,
+    'Piega': 15,
+    'Taglio+Piega': 45,
     'Colorazione': 60,
-    'Trattamenti curativi': 90,
-    'Stirature': 60,
-    'Permanenti': 120,
+    'Colore+Piega': 75,
+    'Colore+Taglio+Piega': 90,
+    'Schiariture': 180,
   };
 
   async function showSlots(date) {
@@ -875,7 +879,7 @@
     });
 
     for (let hr = h.start; hr < h.end; hr++) {
-      for (let mn of [0, 30]) {
+      for (let mn of [0, 15, 30, 45]) {
         const slotMin = hr * 60 + mn;
         const endMin  = slotMin + duratMin;
         const label   = `${String(hr).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;
@@ -887,7 +891,7 @@
         // OPPURE almeno uno dei blocchi da 30min necessari è occupato
         let bloccato = endMin > chiusuraMin;
         if (!bloccato) {
-          for (let t = slotMin; t < endMin; t += 30) {
+          for (let t = slotMin; t < endMin; t += 15) {
             if (occupiedSet.has(t)) { bloccato = true; break; }
           }
         }
