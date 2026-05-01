@@ -23,8 +23,8 @@ module.exports = async function handler(req, res) {
 
   const { nome, cognome, telefono, email, note, data, ora, servizio } = req.body || {};
 
-  if (!nome || !telefono || !data || !ora) {
-    return res.status(400).json({ error: 'Campi obbligatori mancanti: nome, telefono, data, ora.' });
+  if (!nome || !telefono || !email || !data || !ora) {
+    return res.status(400).json({ error: 'Campi obbligatori mancanti: nome, telefono, email, data, ora.' });
   }
 
   const auth = new google.auth.OAuth2(
@@ -62,8 +62,7 @@ module.exports = async function handler(req, res) {
   const gmail       = google.gmail({ version: 'v1', auth });
   const dataLeggibile = `${pad(day)}/${pad(month)}/${year}`;
 
-  if (email) {
-    await gmail.users.messages.send({
+  await gmail.users.messages.send({
       userId: 'me',
       requestBody: {
         raw: buildEmail({
@@ -97,7 +96,6 @@ Clusone, Val Seriana`,
         }),
       },
     });
-  }
 
   await gmail.users.messages.send({
     userId: 'me',

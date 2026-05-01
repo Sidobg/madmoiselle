@@ -16,17 +16,38 @@ module.exports = async function handler(req, res) {
     const calendar = google.calendar({ version: 'v3', auth });
 
     let titolo = 'il tuo appuntamento';
+    let desc   = '';
     try {
       const { data } = await calendar.events.get({
         calendarId: process.env.CALENDAR_ID,
         eventId: token,
       });
       titolo = data.summary || titolo;
+      desc   = data.description || '';
     } catch (_) {}
 
     await calendar.events.delete({
       calendarId: process.env.CALENDAR_ID,
       eventId: token,
+    });
+
+    // Notifica ad Alice
+    const gmail = google.gmail({ version: 'v1', auth });
+    await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: {
+        raw: buildEmail({
+          to:      process.env.GMAIL_USER,
+          from:    process.env.GMAIL_USER,
+          subject: `Appuntamento cancellato – ${titolo}`,
+          body:
+`Un cliente ha cancellato il proprio appuntamento dal sito.
+
+Appuntamento: ${titolo}
+
+${desc}`,
+        }),
+      },
     });
 
     return res.status(200).send(page(
@@ -72,4 +93,15 @@ a{color:#C9A96E;text-decoration:none}
 </div>
 </body>
 </html>`;
+}
+
+function buildEmail({ to, from, subject, body }) {
+  const encodedSubject = `=?UTF-8?B?${Buffer.from(subject).toString('base64')}?=`;
+  const mime = [
+    `To: ${to}`, `From: ${from}`, `Subject: ${encodedSubject}`,
+    'MIME-Version: 1.0', 'Content-Type: text/plain; charset=UTF-8',
+    'Content-Transfer-Encoding: base64', '',
+    Buffer.from(body, 'utf8').toString('base64'),
+  ].join('\r\n');
+  return Buffer.from(mime).toString('base64url');
 }

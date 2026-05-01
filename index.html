@@ -942,6 +942,7 @@
     document.getElementById('telError').style.display = 'none';
 
     if (!nome) { alert('Inserisci il tuo nome.'); return; }
+    if (!email) { alert('Inserisci la tua email per ricevere la conferma.'); return; }
     if (!tel) {
       const input = document.getElementById('inputTel');
       input.classList.add('invalid');
