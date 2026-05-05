@@ -685,7 +685,8 @@
   /* Gooey morphing */
   .gooey-wrap {
     position: relative;
-    height: 70px;
+    height: 80px;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -709,11 +710,14 @@
     width: 100%;
     text-align: center;
     margin: 0;
+    white-space: nowrap;
+    left: 50%;
+    transform: translateX(-50%);
   }
   .gooey-text1 { color: var(--cream); }
   .gooey-text2 { color: var(--gold); }
   @media (max-width: 480px) {
-    .gooey-wrap { height: 52px; }
+    .gooey-wrap { height: 60px; }
   }
 </style>
 </head>
@@ -1177,8 +1181,8 @@
   // Gooey morphing text
   (function() {
     const texts     = ['Mademoiselle', 'Prenota Ora'];
-    const morphTime = 1.2;
-    const cooldownTime = 1.5;
+    const morphTime = 2.5;
+    const cooldownTime = 2.5;
     const t1 = document.getElementById('gooeyText1');
     const t2 = document.getElementById('gooeyText2');
     if (!t1 || !t2) return;
