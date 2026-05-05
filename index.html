@@ -653,6 +653,34 @@
     color: #080808 !important;
     white-space: nowrap;
   }
+
+  /* Checkbox privacy */
+  .privacy-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+  .privacy-wrap input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    margin-top: 2px;
+    accent-color: var(--gold);
+    cursor: pointer;
+  }
+  .privacy-wrap label {
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    line-height: 1.6;
+    cursor: pointer;
+  }
+  .privacy-wrap label a {
+    color: var(--gold);
+    text-decoration: underline;
+  }
 </style>
 </head>
 <body>
@@ -748,6 +776,13 @@
           <label>Note (opzionale)</label>
           <textarea id="inputNote" rows="2" placeholder="Es. tipo di servizio, preferenze…"></textarea>
         </div>
+      </div>
+      <div class="privacy-wrap">
+        <input type="checkbox" id="checkPrivacy">
+        <label for="checkPrivacy">
+          Ho letto e accetto l'<a href="/privacy" target="_blank">informativa sulla privacy</a>.
+          Acconsento al trattamento dei miei dati personali per la gestione dell'appuntamento.
+        </label>
       </div>
       <button class="btn-prenota" id="btnPrenota">Conferma prenotazione</button>
     </div>
@@ -985,6 +1020,10 @@
     document.getElementById('inputTel').classList.remove('invalid');
     document.getElementById('telError').style.display = 'none';
 
+    if (!document.getElementById('checkPrivacy').checked) {
+      alert('Devi accettare l\'informativa sulla privacy per procedere.');
+      return;
+    }
     if (!nome) { alert('Inserisci il tuo nome.'); return; }
     if (!email) { alert('Inserisci la tua email per ricevere la conferma.'); return; }
     if (!tel) {

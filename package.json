@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "dotted-map": "^3.1.0",
     "googleapis": "^144.0.0"
   }
 }
