@@ -80,6 +80,7 @@
   .tagline {
     font-family: 'Cormorant Garamond', serif;
     font-size: 15px;
+    opacity: 1 !important;
     font-weight: 600;
     letter-spacing: 5px;
     text-transform: uppercase;
@@ -520,6 +521,8 @@
 
   @media (max-width: 480px) {
     .form-row { grid-template-columns: 1fr; }
+    .tagline { font-size: 13px; letter-spacing: 3px; color: var(--gold) !important; opacity: 1 !important; }
+    .section-title { font-size: 12px !important; letter-spacing: 3px; color: var(--gold) !important; opacity: 1 !important; }
     .cal-grid { padding: 16px; }
     .slots-grid { grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); }
     .cal-header, .slot-header, .form-inner, .orari-card { padding: 16px; }
@@ -714,7 +717,7 @@
     left: 50%;
     transform: translateX(-50%);
   }
-  .gooey-text1 { color: var(--cream); }
+  .gooey-text1 { color: #1a1a1a; }
   .gooey-text2 { color: var(--gold); }
   @media (max-width: 480px) {
     .gooey-wrap { height: 60px; }
@@ -1181,8 +1184,8 @@
   // Gooey morphing text
   (function() {
     const texts     = ['Mademoiselle', 'Prenota Ora'];
-    const morphTime = 2.5;
-    const cooldownTime = 2.5;
+    const morphTime = 1.2;
+    const cooldownTime = 3.5;
     const t1 = document.getElementById('gooeyText1');
     const t2 = document.getElementById('gooeyText2');
     if (!t1 || !t2) return;
