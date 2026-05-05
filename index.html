@@ -10,8 +10,8 @@
     --bg: transparent;
     --surface: rgba(255,255,255,0.55);
     --border: rgba(180,150,100,0.25);
-    --gold: #F5EDE0;
-    --gold-light: #FFFFFF;
+    --gold: #C9A96E;
+    --gold-light: #E2C99A;
     --cream: #2a2218;
     --text: #3a2e22;
     --muted: #8a7a6a;
@@ -38,7 +38,7 @@
     content: '';
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.20);
+    background: rgba(0, 0, 0, 0.10);
     pointer-events: none;
     z-index: 0;
   }
@@ -128,8 +128,8 @@
   /* Section title */
   .section-title {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 700;
     letter-spacing: 4px;
     text-transform: uppercase;
     color: var(--gold);
@@ -698,7 +698,7 @@
   /* Gooey morphing */
   .gooey-wrap {
     position: relative;
-    height: 80px;
+    height: 100px;
     width: 100%;
     display: flex;
     align-items: center;
@@ -726,6 +726,8 @@
     white-space: nowrap;
     left: 50%;
     transform: translateX(-50%);
+    font-size: 52px !important;
+    font-weight: 700 !important;
   }
   .gooey-text1 { color: #1a1a1a; }
   .gooey-text2 { color: var(--gold); }
