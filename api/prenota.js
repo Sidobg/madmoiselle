@@ -7,7 +7,6 @@ const DURATE_MIN = {
   'Taglio Uomo': 30,
   'Piega': 15,
   'Taglio+Piega': 45,
-  'Colorazione': 60,
   'Colore+Piega': 75,
   'Colore+Taglio+Piega': 90,
   'Schiariture': 180,
