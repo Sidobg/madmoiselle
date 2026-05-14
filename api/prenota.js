@@ -90,8 +90,8 @@ l'appuntamento verrà automaticamente annullato.
 
 Ti aspettiamo!
 
-Mademoiselle · Salone di bellezza
-Clusone, Val Seriana`,
+Mademoiselle · Hair & Care
+Clusone · Via Vincenzo De Paoli 13`,
         }),
       },
     });
