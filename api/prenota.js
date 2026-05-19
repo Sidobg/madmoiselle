@@ -4,7 +4,7 @@ const BASE_URL = process.env.BASE_URL || 'https://madmoiselle.vercel.app';
 
 const DURATE_MIN = {
   'Taglio Uomo': 30,
-  'Piega': 15,
+  'Piega': 30,
   'Taglio+Piega': 45,
   'Colore+Piega': 75,
   'Colore+Taglio+Piega': 90,
