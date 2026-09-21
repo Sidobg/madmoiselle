@@ -741,7 +741,14 @@
     .fai-firma{transition:none}
     .fai-firma:hover{transform:none}
   }
-  .fai-firma{margin-top:26px;color:#8a7a6a}
+  /* Lo sfondo del sito e' una foto (forbici e pettine) e si vede bene
+     proprio qui in fondo. Il blocco pieno dell'AI contro un'immagine
+     mossa diventa una macchia, quindi la firma si porta dietro il suo
+     appoggio a tinta unita — nella stessa crema del sito, cosi' non
+     sembra una toppa ma un riquadro come gli altri della pagina. */
+  .fai-firma{margin-top:30px;color:#8a7a6a;
+    background:rgba(245,237,224,.88);border-radius:14px;
+    padding:16px 22px 18px;backdrop-filter:blur(2px)}
 </style>
 </head>
 <body>
