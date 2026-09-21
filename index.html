@@ -741,16 +741,12 @@
     .fai-firma{transition:none}
     .fai-firma:hover{transform:none}
   }
-  /* Niente riquadro: la firma sta direttamente sulla pagina. Lo sfondo
-     pero' e' una foto — forbici e pettine — e il blocco pieno dell'AI su
-     un'immagine mossa si impasta. Al posto del pannello c'e' un alone
-     chiaro appena sotto le lettere: stacca dalla foto senza disegnare
-     niente attorno. */
-  .fai-firma{margin-top:28px;color:#8a7a6a}
-  .fai-firma__segno{width:clamp(76px,8vw,84px);
-    filter:drop-shadow(0 0 3px rgba(245,237,224,.95)) drop-shadow(0 1px 2px rgba(245,237,224,.85))}
-  .fai-firma__occhiello{font-size:9px;letter-spacing:.2em;
-    text-shadow:0 0 3px rgba(245,237,224,.95)}
+  /* Firma in nero, senza alone. Il nero pieno sulla crema chiara del sito
+     ha contrasto a sufficienza da reggere anche sopra la foto: l'alone che
+     c'era prima serviva a staccarla, ma si vedeva piu' lui della firma. */
+  .fai-firma{margin-top:28px;color:#1a1a1a}
+  .fai-firma__segno{width:clamp(76px,8vw,84px)}
+  .fai-firma__occhiello{font-size:9px;letter-spacing:.2em;opacity:.45}
 </style>
 </head>
 <body>
